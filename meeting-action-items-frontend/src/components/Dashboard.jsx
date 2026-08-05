@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ArrowLeft, Calendar, CheckCircle2, AlertTriangle, User, Clock, Mic, Square, FileText, Upload, AudioLines, History as HistoryIcon } from 'lucide-react'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+
 function getGreeting() {
   const hour = new Date().getHours()
   if (hour < 12) return 'Good morning'
@@ -133,7 +135,7 @@ export default function Dashboard({ session }) {
     setHistoryError('')
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/meetings', {
+      const res = await fetch(`${API_URL}/meetings`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
       if (!res.ok) throw new Error('Unable to load your meeting history.')
@@ -192,7 +194,7 @@ export default function Dashboard({ session }) {
   }
 
   async function extractOne(transcriptText) {
-    const res = await fetch('http://127.0.0.1:8000/extract', {
+    const res = await fetch(`${API_URL}/extract`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
       body: JSON.stringify({ transcript: transcriptText }),
@@ -204,7 +206,7 @@ export default function Dashboard({ session }) {
   async function extractAudio(blobOrFile, name) {
     const formData = new FormData()
     formData.append('file', blobOrFile, name)
-    const res = await fetch('http://127.0.0.1:8000/extract-audio', {
+    const res = await fetch(`${API_URL}/extract-audio`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${session.access_token}` },
       body: formData,
@@ -333,7 +335,7 @@ export default function Dashboard({ session }) {
 
   async function openMeeting(meeting) {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/meetings/${meeting.meeting_id}`, {
+      const res = await fetch(`${API_URL}/meetings/${meeting.meeting_id}`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
       if (!res.ok) throw new Error('Unable to load this meeting.')
