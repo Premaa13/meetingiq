@@ -20,7 +20,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://meetingiq.vercel.app",  # replace with your actual Vercel URL once you have it
+        "https://meetingiq-iota.vercel.app",
+        "https://meetingiq-git-main-premaa13s-projects.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
