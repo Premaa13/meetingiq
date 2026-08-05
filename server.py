@@ -18,7 +18,10 @@ app = FastAPI()
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://meetingiq.vercel.app",  # replace with your actual Vercel URL once you have it
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
