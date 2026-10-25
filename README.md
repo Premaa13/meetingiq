@@ -2,93 +2,86 @@
 
 Turn messy meeting transcripts into clear, confidence-ranked action items — automatically.
 
-Paste a transcript, upload a file (`.txt`, `.vtt`, `.pdf`), record audio live, or upload an audio/video recording — MeetingIQ extracts the meeting title, date, key discussion points, and action items (task, owner, deadline), flagging anything that's missing an owner or deadline so nothing slips through.
+MeetingIQ extracts meeting titles, dates, key discussion points, and action items (task, owner, and deadline) from meeting transcripts and recordings. It separates confirmed tasks from items that need review because information is missing.
+
+## Features
+
+* **Multiple input methods** — Paste transcripts, upload `.txt`, `.vtt`, or `.pdf` files, record audio, or upload audio/video recordings.
+* **Confidence-gated action items** — Separates confirmed tasks from items missing an owner or deadline.
+* **Key points** — Captures important discussion points and contextual notes.
+* **Meeting history** — Saves and displays previous extractions.
+* **Deadline reminders** — Browser notifications for action items due within three days.
+* **Authentication** — Supabase Auth with user-scoped data access.
 
 ## Screenshots
 
 ### Extraction Results
-![Extraction results](./screenshots/result1.png)
-![Confirmed and needs-review items](./screenshots/result2.png)
-![Key points section](./screenshots/result3.png)
-## Features
 
-- 📝 **Multiple input methods** — paste text, upload `.txt`/`.vtt`/`.pdf` files, record audio live, or upload audio/video recordings
-- ✅ **Confidence-gated action items** — automatically separates clearly-defined tasks ("Confirmed") from ones missing an owner or deadline ("Needs Review")
-- 📌 **Key Points** — captures important context and casual notes mentioned in the meeting that aren't formal action items
-- 🕘 **History** — every extraction is saved; browse and revisit past meetings anytime
-- ⏰ **Deadline reminders** — browser notifications for action items due within 3 days
-- 🔐 **Authenticated & secure** — Supabase Auth with user-scoped data access, so users only see their own data
+![Extraction results](./screenshots/result1.png)
+
+![Confirmed and needs-review items](./screenshots/result2.png)
+
+![Key points section](./screenshots/result3.png)
 
 ## Tech Stack
 
-**Frontend:** React (Vite), Tailwind CSS, lucide-react
-**Backend:** Spring Boot 3 / Java 17 (migration target); the original FastAPI backend remains available
-**Database & Auth:** Supabase (Postgres + Auth + RLS)
-**AI Extraction:** LLM-based transcript parsing (text + audio)
+| Component        | Technology                              |
+| ---------------- | --------------------------------------- |
+| Frontend         | React, Vite, Tailwind CSS, lucide-react |
+| Java Backend     | Java 17, Spring Boot 3, Maven           |
+| Original Backend | Python, FastAPI                         |
+| AI Extraction    | Gemini API                              |
+| Database         | Supabase PostgreSQL                     |
+| Authentication   | Supabase Auth and Row-Level Security    |
 
 ## Project Structure
 
-```
-meeting-action-items/
-├── server.py                          # FastAPI backend — API routes
-├── extract.py                         # Extraction logic (text & audio)
-├── requirements.txt                   # Python dependencies
-├── .env                                # Backend secrets (not committed)
+```text
+meetingiq/
+├── server.py
+├── extract.py
+├── requirements.txt
+├── .gitignore
+├── README.md
+├── meetingiq-backend/
+│   ├── pom.xml
+│   └── src/
+│       ├── main/
+│       │   ├── java/com/meetingiq/
+│       │   │   ├── controller/
+│       │   │   ├── service/
+│       │   │   ├── config/
+│       │   │   ├── dto/
+│       │   │   └── exception/
+│       │   └── resources/
+│       │       └── application.properties
+│       └── test/
 └── meeting-action-items-frontend/
     ├── src/
-    │   ├── components/
-    │   │   ├── Dashboard.jsx          # Main app screen
-    │   │   ├── FloatingMenu.jsx       # Input-mode switcher
-    │   │   ├── Header.jsx
-    │   │   └── Mascot.jsx
-    │   └── lib/
-    │       └── supabase.js            # Supabase client
-    ├── .env                            # Frontend secrets (not committed)
-    └── package.json
+    ├── package.json
+    └── .gitignore
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18+)
-- Java 17 and Maven (for the Java backend)
-- Python 3.10+ (only for the preserved Python backend)
-- A [Supabase](https://supabase.com) project (URL + service key)
+* Node.js 18 or later
+* Java 17
+* Maven
+* A Supabase project
+* A Gemini API key for AI extraction
 
-### 1. Clone the repo
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Premaa13/meetingiq.git
 cd meetingiq
 ```
 
-### 2. Existing Python backend (preserved)
+### 2. Configure Environment Variables
 
-```bash
-python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # macOS/Linux
-
-pip install -r requirements.txt
-```
-
-Create a `.env` file in the project root:
-
-```env
-SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_KEY=your_supabase_service_key
-```
-
-Run the backend:
-
-```bash
-python server.py
-```
-
-### 3. Java backend (Spring Boot 3)
-
-The Java backend loads the following values from environment variables or the root `.env` file:
+Configure the following variables for the Java backend:
 
 ```env
 SUPABASE_URL=your_supabase_url
@@ -96,63 +89,90 @@ SUPABASE_SERVICE_KEY=your_supabase_service_key
 GEMINI_API_KEY=your_gemini_api_key
 ```
 
-Keep `SUPABASE_SERVICE_KEY` on the backend only. From the repository root, run:
+Provide these values through your local environment or your supported local configuration. Never commit real API keys or service-role keys to GitHub.
 
-```powershell
-cd meetingiq-backend
-mvn spring-boot:run
-```
-
-The Java API listens on `http://localhost:8080`. To use it from the existing frontend, set `VITE_API_URL=http://localhost:8080` in `meeting-action-items-frontend/.env` and restart Vite. The frontend source does not need to change.
-
-To build and test the Java backend:
-
-```powershell
-cd meetingiq-backend
-mvn test
-mvn package
-```
-
-The API provides `GET /meetings`, `GET /meetings/{meeting_id}`, `POST /extract`, and `POST /extract-audio`.
-
-### 4. Frontend setup
-
-```bash
-cd meeting-action-items-frontend
-npm install
-```
-
-Create a `.env` file inside `meeting-action-items-frontend/`:
+For the frontend, create `meeting-action-items-frontend/.env`:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_API_URL=http://localhost:8080
 ```
 
-Run the frontend:
+Use your actual Supabase project URL and public anon key. Keep the service-role key exclusively on the backend.
+
+### 3. Run the Java Backend
+
+From the repository root:
 
 ```bash
+cd meetingiq-backend
+mvn spring-boot:run
+```
+
+The Java backend runs at:
+
+`http://localhost:8080`
+
+To build and test the backend:
+
+```bash
+mvn test
+mvn package
+```
+
+The API includes endpoints for retrieving meetings, extracting action items from transcripts, and processing audio recordings.
+
+### 4. Run the Frontend
+
+Open a second terminal at the repository root:
+
+```bash
+cd meeting-action-items-frontend
+npm install
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`. Its `.env` still needs `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`; add `VITE_API_URL` when using the Java backend.
+Open the local URL printed by Vite, usually:
 
-## Database Schema (Supabase)
+`http://localhost:5173`
 
-| Table | Purpose |
-|---|---|
-| `meetings` | One row per extraction — title, date, transcript, user_id |
-| `action_items` | Task, owner, deadline, confidence level — linked to a meeting |
-| `key_points` | Casual notes / context captured alongside action items |
+Ensure the frontend environment variables are configured and restart the development server after changing them.
 
-All tables use Row-Level Security so users only ever access their own data.
+### 5. Original Python Backend
+
+The original Python backend files are preserved in the repository. To run that backend separately, install its dependencies:
+
+```bash
+python -m venv venv
+```
+
+On Windows:
+
+```powershell
+venv\Scripts\activate
+pip install -r requirements.txt
+python server.py
+```
+
+Use the environment variables required by the Python backend. Do not expose backend secrets in frontend code.
+
+## Database Schema
+
+| Table          | Purpose                                                          |
+| -------------- | ---------------------------------------------------------------- |
+| `meetings`     | Stores meeting titles, dates, transcripts, and user associations |
+| `action_items` | Stores tasks, owners, deadlines, and confidence information      |
+| `key_points`   | Stores important discussion points and contextual notes          |
+
+Row-Level Security (RLS) policies help ensure users can access only the data permitted by the configured policies.
 
 ## Roadmap
 
-- [ ] Live deployment
-- [ ] Editable action items (mark complete, reassign owner)
-- [ ] Team/shared meeting spaces
+* [ ] Deploy the application
+* [ ] Allow users to edit and complete action items
+* [ ] Add shared meeting spaces
 
 ## License
 
-This project currently has no license specified.
+No license has been specified yet.
