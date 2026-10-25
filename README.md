@@ -17,12 +17,12 @@ Paste a transcript, upload a file (`.txt`, `.vtt`, `.pdf`), record audio live, o
 - 📌 **Key Points** — captures important context and casual notes mentioned in the meeting that aren't formal action items
 - 🕘 **History** — every extraction is saved; browse and revisit past meetings anytime
 - ⏰ **Deadline reminders** — browser notifications for action items due within 3 days
-- 🔐 **Authenticated & secure** — Supabase Auth with row-level security, so users only ever see their own data
+- 🔐 **Authenticated & secure** — Supabase Auth with user-scoped data access, so users only see their own data
 
 ## Tech Stack
 
 **Frontend:** React (Vite), Tailwind CSS, lucide-react
-**Backend:** FastAPI (Python)
+**Backend:** Spring Boot 3 / Java 17 (migration target); the original FastAPI backend remains available
 **Database & Auth:** Supabase (Postgres + Auth + RLS)
 **AI Extraction:** LLM-based transcript parsing (text + audio)
 
@@ -52,7 +52,8 @@ meeting-action-items/
 ### Prerequisites
 
 - Node.js (v18+)
-- Python 3.10+
+- Java 17 and Maven (for the Java backend)
+- Python 3.10+ (only for the preserved Python backend)
 - A [Supabase](https://supabase.com) project (URL + service key)
 
 ### 1. Clone the repo
@@ -62,7 +63,7 @@ git clone https://github.com/Premaa13/meetingiq.git
 cd meetingiq
 ```
 
-### 2. Backend setup
+### 2. Existing Python backend (preserved)
 
 ```bash
 python -m venv venv
@@ -85,7 +86,36 @@ Run the backend:
 python server.py
 ```
 
-### 3. Frontend setup
+### 3. Java backend (Spring Boot 3)
+
+The Java backend loads the following values from environment variables or the root `.env` file:
+
+```env
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_KEY=your_supabase_service_key
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+Keep `SUPABASE_SERVICE_KEY` on the backend only. From the repository root, run:
+
+```powershell
+cd meetingiq-backend
+mvn spring-boot:run
+```
+
+The Java API listens on `http://localhost:8080`. To use it from the existing frontend, set `VITE_API_URL=http://localhost:8080` in `meeting-action-items-frontend/.env` and restart Vite. The frontend source does not need to change.
+
+To build and test the Java backend:
+
+```powershell
+cd meetingiq-backend
+mvn test
+mvn package
+```
+
+The API provides `GET /meetings`, `GET /meetings/{meeting_id}`, `POST /extract`, and `POST /extract-audio`.
+
+### 4. Frontend setup
 
 ```bash
 cd meeting-action-items-frontend
@@ -105,7 +135,7 @@ Run the frontend:
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`.
+The app will be available at `http://localhost:5173`. Its `.env` still needs `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`; add `VITE_API_URL` when using the Java backend.
 
 ## Database Schema (Supabase)
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ArrowLeft, Calendar, CheckCircle2, AlertTriangle, User, Clock, Mic, Square, FileText, Upload, AudioLines, History as HistoryIcon } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -121,6 +121,13 @@ export default function Dashboard({ session }) {
   const mediaRecorderRef = useRef(null)
   const audioChunksRef = useRef([])
 
+  async function getAuthHeaders() {
+    const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
+    if (sessionError) throw sessionError
+    if (!currentSession?.access_token) throw new Error('Your session has expired. Please sign in again.')
+    return { Authorization: `Bearer ${currentSession.access_token}` }
+  }
+
   const backgroundStyles = `
     @keyframes floatSlow {
       0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
@@ -136,7 +143,7 @@ export default function Dashboard({ session }) {
 
     try {
       const res = await fetch(`${API_URL}/meetings`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: await getAuthHeaders(),
       })
       if (!res.ok) throw new Error('Unable to load your meeting history.')
       const data = await res.json()
@@ -196,7 +203,7 @@ export default function Dashboard({ session }) {
   async function extractOne(transcriptText) {
     const res = await fetch(`${API_URL}/extract`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
       body: JSON.stringify({ transcript: transcriptText }),
     })
     if (!res.ok) throw new Error('Extraction failed. Please try again.')
@@ -208,7 +215,7 @@ export default function Dashboard({ session }) {
     formData.append('file', blobOrFile, name)
     const res = await fetch(`${API_URL}/extract-audio`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${session.access_token}` },
+      headers: await getAuthHeaders(),
       body: formData,
     })
     if (!res.ok) throw new Error('Audio extraction failed. Please try again.')
@@ -336,7 +343,7 @@ export default function Dashboard({ session }) {
   async function openMeeting(meeting) {
     try {
       const res = await fetch(`${API_URL}/meetings/${meeting.meeting_id}`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: await getAuthHeaders(),
       })
       if (!res.ok) throw new Error('Unable to load this meeting.')
       const data = await res.json()
